@@ -1,0 +1,140 @@
+version: "3.3"
+
+services:
+
+  api:
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: api
+      PORT: 3000
+    depends_on:
+      - zookeeper
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-gw.rule=PathPrefix(`/`)"
+      - "traefik.http.services.api-gw.loadbalancer.server.port=3000"
+    networks:
+      - internal
+
+  greeter:
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: greeter
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+
+  user:
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: user
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:latest'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+    
+    networks:
+      - internal
+
+  kafka:
+    hostname: kafka
+    container_name: kafka
+    image: 'confluentinc/cp-kafka:latest'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://kafka:9094 
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://:9092, OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT, OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_PROTOCOL_LISTENERS: INTERNAL://:9092, OUTSIDE://:9094
+      KAFKA_INTER_BROKER_PROTOCOL_ADVERTISED_LISTENERS: INTERNAL://:9092, OUTSIDE://:9094
+      KAFKA_HEAP_OPTS: -Xmx12G -Xms10G
+      KAFKA_JVM_PERFORMANCE_OPTS: -Xmx12G -Xms10G
+    depends_on:
+      - zookeeper
+    volumes:
+      - ./kafka_data:/kafka
+
+    networks:
+      - internal
+
+  control-center:
+      image: confluentinc/cp-enterprise-control-center:6.0.1
+      hostname: control-center
+      depends_on:
+        - kafka
+      ports:
+        - 9021:9021
+      expose:
+        - 9021
+
+      environment:
+        CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:9092'
+        CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+        CONTROL_CENTER_REPLICATION_FACTOR: 1
+        CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+        CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+        CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+        PORT: 9021
+      networks:
+        - internal
+
+  kafka-topics-generator:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic exam --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+    networks:
+      - internal
+
+  traefik:
+    image: traefik:v2.1
+    command:
+      - "--api.insecure=true" # Don't do that in production!
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+    ports:
+      - 3000:80
+      - 3001:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal
+      - default
+
+networks:
+  internal:
+
+volumes:
+  data:

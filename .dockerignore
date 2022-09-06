@@ -1,0 +1,11 @@
+docker-compose.env
+docker-compose.yml
+Dockerfile
+node_modules
+test
+.vscode
+zoo
+data
+node_modules
+kafka_data
+
