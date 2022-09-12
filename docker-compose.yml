@@ -31,6 +31,19 @@ services:
     networks:
       - internal
 
+
+  user-producer:
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: user-producer
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+
   user:
     build:
       context: .
@@ -58,7 +71,7 @@ services:
     image: 'confluentinc/cp-kafka:latest'
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://kafka:9094 
@@ -78,7 +91,8 @@ services:
       - internal
 
   control-center:
-      image: confluentinc/cp-enterprise-control-center:6.0.1
+      image: confluentinc/cp-enterprise-control-center:latest
+      platform: linux/arm64
       hostname: control-center
       depends_on:
         - kafka
@@ -109,8 +123,7 @@ services:
       kafka-topics --bootstrap-server kafka:9092 --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic exam --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user --replication-factor 1 --partitions 2
 
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:9092 --list

@@ -1,5 +1,5 @@
 "use strict";
-const kafka = require( "kafka-node" );
+const { Kafka } = require( "kafkajs" );
 
 module.exports = {
 
@@ -20,33 +20,42 @@ module.exports = {
 				path: "/hello"
 			},
 			async handler () {
-				const client = new kafka.KafkaClient( { kafkaHost: "kafka:9092" } );
-				const producer = new kafka.Producer( client );
-				const Consumer = kafka.Consumer;
-				const consumer = new Consumer(
-					client,
-					[{ topic: "user", partition: 0 }],
-					{
-						autoCommit: false
-					}
-				);
-				consumer.on( "message", function ( message ) {
-					console.log( message );
-				}
-				);
-				producer.on( "ready", function () {
-					producer.send( [
-						{ topic: "user", messages: "Success!!! This is awesome!", partition: 0 }
-					], function ( err, data ) {
-						console.log( data );
-					} );
-				}
-				);
-				producer.on( "error", function ( err ) {
-					console.log( err );
-				}
-				);
-				return "Hello Moleculer";
+
+				const kafka = new Kafka({
+					clientId: "my-app",
+					brokers: ["kafka:9092"]
+				});
+
+				const producer = kafka.producer();
+				const consumer = kafka.consumer({ groupId: "user" });
+
+				const run = async () => {
+					// Producing
+					await producer.connect();
+					await producer.send({
+						topic: "user",
+						messages: [
+							{ value: "Hello KafkaJS user!" },
+						],
+					});
+
+					// Consuming
+					await consumer.connect();
+					await consumer.subscribe({ topic: "user", fromBeginning: true });
+
+					await consumer.run({
+						eachMessage: async ({ topic, partition, message }) => {
+							console.log({
+								partition,
+								offset: message.offset,
+								value: message.value.toString(),
+							});
+						},
+					});
+				};
+
+				run().catch(console.error);
+				return "Hello from User!";
 			}
 
 		}
