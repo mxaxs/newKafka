@@ -59,9 +59,7 @@ module.exports = {
 	/**
 	 * Events
 	 */
-	events: {
-
-	},
+	events: {},
 
 	/**
 	 * Methods
