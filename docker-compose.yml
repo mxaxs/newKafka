@@ -31,7 +31,6 @@ services:
     networks:
       - internal
 
-
   user-producer:
     build:
       context: .
@@ -85,7 +84,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./kafka_data:/kafka
+      - ./kafka_data:/kafka_data
 
     networks:
       - internal
@@ -145,6 +144,21 @@ services:
     networks:
       - internal
       - default
+  
+  grafana:
+    image: "grafana/grafana:latest"
+    ports:
+     - "4000:3000"
+    environment:
+      GF_PATHS_DATA : /var/lib/grafana
+      GF_SECURITY_ADMIN_PASSWORD : kafka
+    volumes:
+     - ./grafana/provisioning:/etc/grafana/provisioning
+     - ./grafana/dashboards:/var/lib/grafana/dashboards
+    container_name: grafana
+    
+    networks:
+      - internal
 
 networks:
   internal:

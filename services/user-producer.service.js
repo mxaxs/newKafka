@@ -25,7 +25,7 @@ module.exports = {
 
 				producer.on( "ready", function () {
 					producer.send( [
-						{ topic: "user", messages: "Success!!! This is awesome!", partition: 0 }
+						{ topic: "user", messages: "Success!!! This is awesome!", ack:1, partition: 0 }
 					], function ( err, data ) {
 						console.log( data );
 					} );

@@ -153,21 +153,22 @@ module.exports = {
 	// Enable/disable built-in metrics function. More info: https://moleculer.services/docs/0.14/metrics.html
 	metrics: {
 		enabled: true,
-		// Available built-in reporters: "Console", "CSV", "Event", "Prometheus", "Datadog", "StatsD"
-		reporter: {
-			type: "Prometheus",
-			options: {
-				// HTTP port
-				port: 3030,
-				// HTTP URL path
-				path: "/metrics",
-				// Default labels which are appended to all metrics labels
-				defaultLabels: registry => ({
-					namespace: registry.broker.namespace,
-					nodeID: registry.broker.nodeID
-				})
+		reporter: [
+			{
+				type: "Prometheus",
+				options: {
+					// HTTP port
+					port: 3030,
+					// HTTP URL path
+					path: "/metrics",
+					// Default labels which are appended to all metrics labels
+					defaultLabels: registry => ({
+						namespace: registry.broker.namespace,
+						nodeID: registry.broker.nodeID
+					})
+				}
 			}
-		}
+		]
 	},
 
 	// Enable built-in tracing function. More info: https://moleculer.services/docs/0.14/tracing.html

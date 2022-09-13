@@ -66,6 +66,7 @@ module.exports = {
 					await producer.connect();
 					const res = await producer.send({
 						topic: "user",
+						acks: 1,
 						messages: Array(getRandomNumber())
 							.fill()
 							.map(_ => createMessage(getRandomNumber()))
@@ -94,7 +95,15 @@ module.exports = {
 		this.schema.adapter.db.addHook( "afterFind", "user", ( result ) => {
 			console.warn( "afterFind\n", result[0].dataValues );
 		} );
-		this.schema.adapter.db.addHook( "afterSave", "user", ( result ) => {
+		this.schema.adapter.db.addHook( "afterSave", "user", async ( result ) => {
+
+			await producer.connect();
+			const res = await producer.send({
+				topic: "user",
+				acks: 1,
+				messages:[ {key:"new-user", value: JSON.stringify(result.dataValues)}]
+			});
+			await producer.disconnect();
 			console.warn( "afterSave\n", result.dataValues );
 		} );
 
@@ -103,11 +112,12 @@ module.exports = {
 		await consumer.subscribe({ topic: "user", fromBeginning: true });
 
 		await consumer.run({
-			eachMessage: async ({ topic, partition, message }) => {
+			eachMessage: async ( { topic, partition, message } ) => {
+				const mKey = message.key ? message.key.toString() : "no key";
 				console.log({
 					partition,
 					offset: message.offset,
-					key: message.key.toString() || "no key",
+					key: mKey,
 					value: message.value.toString(),
 				});
 			},
