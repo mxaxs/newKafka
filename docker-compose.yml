@@ -3,23 +3,25 @@ version: "3.3"
 services:
 
   api:
+    container_name: api
     build:
       context: .
     image: moleculer-project
     env_file: docker-compose.env
     environment:
       SERVICES: api
-      PORT: 3000
+      PORT: 8080
     depends_on:
       - zookeeper
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api-gw.rule=PathPrefix(`/`)"
-      - "traefik.http.services.api-gw.loadbalancer.server.port=3000"
+      - "traefik.http.services.api-gw.loadbalancer.server.port=8080"
     networks:
       - internal
 
   greeter:
+    container_name: greeter
     build:
       context: .
     image: moleculer-project
@@ -32,6 +34,7 @@ services:
       - internal
 
   user-producer:
+    container_name: user-producer
     build:
       context: .
     image: moleculer-project
@@ -44,6 +47,7 @@ services:
       - internal
 
   user:
+    container_name: user
     build:
       context: .
     image: moleculer-project
@@ -56,6 +60,8 @@ services:
       - internal
 
   zookeeper:
+    container_name: zookeeper
+    hostname: zookeeper
     image: 'confluentinc/cp-zookeeper:latest'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
@@ -90,6 +96,7 @@ services:
       - internal
 
   control-center:
+      container_name: control-center
       image: confluentinc/cp-enterprise-control-center:latest
       platform: linux/arm64
       hostname: control-center
@@ -131,32 +138,41 @@ services:
       - internal
 
   traefik:
+    hostname: traefik
+    container_name: traefik
     image: traefik:v2.1
     command:
       - "--api.insecure=true" # Don't do that in production!
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
     ports:
-      - 3000:80
-      - 3001:8080
+      - "80:80"
+      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - internal
       - default
   
-  grafana:
-    image: "grafana/grafana:latest"
+  prometheus:
+    hostname: prometheus
+    container_name: prometheus
+    image: prom/prometheus
     ports:
-     - "4000:3000"
-    environment:
-      GF_PATHS_DATA : /var/lib/grafana
-      GF_SECURITY_ADMIN_PASSWORD : kafka
+      - "9090:9090"
     volumes:
-     - ./grafana/provisioning:/etc/grafana/provisioning
-     - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./config/prometheus:/etc/prometheus
+    networks:
+      - internal
+
+  grafana:
+    hostname: grafana
     container_name: grafana
-    
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana:/etc/grafana/provisioning
     networks:
       - internal
 
