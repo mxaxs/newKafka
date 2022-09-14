@@ -1,41 +1,36 @@
 "use strict";
-const DbMixin = require("../mixins/users.db.mixin");
+const DbMixin = require("../mixins/nodes.db.mixin");
 const Sequelize = require( "sequelize" );
 const { Kafka } = require( "kafkajs" );
 const kafka = new Kafka( {
 	logLevel: 4,
-	clientId: "user-service",
+	clientId: "node-service",
 	brokers: ["kafka:9092"]
 });
 const producer = kafka.producer();
-const consumer = kafka.consumer( { groupId: "user" } );
+const consumer = kafka.consumer( { groupId: "node" } );
 
 module.exports = {
-	name: "user",
-	mixins: [DbMixin( "user" )],
+	name: "node",
+	mixins: [DbMixin( "node" )],
 	model: {
-		name: "user",
+		name: "node",
 		define: {
 			id: {primaryKey: true,autoIncrement: true,type: Sequelize.INTEGER},
-			utype: Sequelize.INTEGER,
 			name: Sequelize.STRING,
-			surname: Sequelize.STRING,
-			email: Sequelize.STRING,
-			phone: Sequelize.STRING,
-			access_level: Sequelize.STRING,
-			scope:  {default: [],type: Sequelize.JSONB},
-			password: Sequelize.STRING,
-			doc_type: Sequelize.STRING,
-			doc_id: Sequelize.STRING,
-			doc_uf: Sequelize.STRING,
-			avatar: Sequelize.STRING,
-			bias: Sequelize.STRING,
-			fbuid: Sequelize.STRING,
+			address_name: Sequelize.STRING,
+			address_number: Sequelize.STRING,
+			zip_code: Sequelize.STRING,
+			contact_email: Sequelize.STRING,
+			contact_phone: Sequelize.STRING,
+			contact_name: Sequelize.STRING,
+			head_medic_name: Sequelize.STRING,
+			head_medic_email: Sequelize.STRING,
+			head_medic_phone: Sequelize.STRING,
+			cnpj: Sequelize.STRING,
+			logo: Sequelize.STRING,
+			hub_id: Sequelize.INTEGER,
 			active: Sequelize.BOOLEAN,
-			projects: {default: [],type: Sequelize.JSONB},
-			nodes:  {default: [],type: Sequelize.JSONB},
-			hubs:  {default: [],type: Sequelize.JSONB},
-			cpf: Sequelize.STRING,
 			createdAt: Sequelize.DATE,
 			updatedAt: Sequelize.DATE,
 		},
@@ -44,43 +39,38 @@ module.exports = {
 	settings: {
 		fields: [
 			"id",
-			"utype",
 			"name",
-			"surname",
-			"email",
-			"phone",
-			"access_level",
-			"scope",
-			"password",
-			"doc_type",
-			"doc_id",
-			"doc_uf",
-			"avatar",
-			"bias",
-			"fbuid",
+			"address_name",
+			"address_number",
+			"zip_code",
+			"contact_email",
+			"contact_phone",
+			"contact_name",
+			"head_medic_name",
+			"head_medic_email",
+			"head_medic_phone",
+			"cnpj",
+			"logo",
+			"hub_id",
 			"active",
-			"projects",
-			"nodes",
-			"hubs",
-			"cpf",
 			"createdAt",
 			"updatedAt",
 		],
 		entityValidator: {
-			name: "string|min:3",
-			surname: "string|min:3",
-			email: "string|email",
+			hub_id: {type: "number",positive: true,convert: true},
+			name: {type: "string",min: 3,max: 255},
+			contact_email: "string|email",
 		},
 	},
 	actions: {
 		test: {
 			rest: {
 				method: "GET",
-				path: "/test"
+				path: "/all-nodes",
 			},
 			async handler () {
 				//this.broker.call("$node.health").then(res => console.log(res));
-				return this.schema.adapter.db.query("SELECT * FROM users WHERE id != '2'")
+				return this.schema.adapter.db.query("SELECT * FROM nodes WHERE id != '2'")
 					.then(([res, metadata]) => res);
 			},
 		},
@@ -98,7 +88,7 @@ module.exports = {
 					});
 					await producer.connect();
 					const res = await producer.send({
-						topic: "user",
+						topic: "node",
 						acks: 1,
 						messages: Array(getRandomNumber())
 							.fill()
@@ -115,25 +105,37 @@ module.exports = {
 		}
 	},
 	events: {
-		"user.*"(ctx) {
+		"node.*"(ctx) {
 			console.log("Payload:", ctx.params);
 			console.log("Sender:", ctx.nodeID);
 			console.log("Metadata:", ctx.meta);
 			console.log("The called event name:", ctx.eventName);
 		}
 	},
+	methods: {
+		async test () {
+			return this.schema.adapter.db.query( "SELECT * FROM nodes WHERE id != '2'" )
+				.then( ( [res, metadata] ) => res );
+		},
+	},
+	async created () {
+
+		console.log( "Node service created" );
+
+	},
+
 	async started () {
 
-		this.schema.adapter.db.addHook( "afterFind", "user", ( result ) => {
-			console.warn( "afterFind\n", result[0].dataValues );
+		this.schema.adapter.db.addHook( "afterFind", "node", ( result ) => {
+			console.warn( "afterFind\n", JSON.stringify(result.dataValues) );
 		} );
-		this.schema.adapter.db.addHook( "afterSave", "user", async ( result ) => {
+		this.schema.adapter.db.addHook( "afterSave", "node", async ( result ) => {
 
 			await producer.connect();
 			const res = await producer.send({
-				topic: "user",
+				topic: "node",
 				acks: 1,
-				messages:[ {key:"new-user", value: JSON.stringify(result.dataValues)}]
+				messages:[ {key:"new-node", value: JSON.stringify(result.dataValues)}]
 			});
 			await producer.disconnect();
 			console.warn( "afterSave\n", result.dataValues );
@@ -141,7 +143,7 @@ module.exports = {
 
 		// Consuming
 		await consumer.connect();
-		await consumer.subscribe({ topic: "user", fromBeginning: true });
+		await consumer.subscribe({ topic: "node", fromBeginning: true });
 
 		await consumer.run({
 			eachMessage: async ( { topic, partition, message } ) => {
@@ -156,4 +158,8 @@ module.exports = {
 		} );
 		console.log("STARTED");
 	},
+	async stopped () {
+		console.log("STOPPED");
+	},
+
 };

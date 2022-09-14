@@ -1,41 +1,33 @@
 "use strict";
-const DbMixin = require("../mixins/users.db.mixin");
+const DbMixin = require("../mixins/projects.db.mixin");
 const Sequelize = require( "sequelize" );
 const { Kafka } = require( "kafkajs" );
 const kafka = new Kafka( {
 	logLevel: 4,
-	clientId: "user-service",
+	clientId: "project-service",
 	brokers: ["kafka:9092"]
 });
 const producer = kafka.producer();
-const consumer = kafka.consumer( { groupId: "user" } );
+const consumer = kafka.consumer( { groupId: "project" } );
 
 module.exports = {
-	name: "user",
-	mixins: [DbMixin( "user" )],
+	name: "project",
+	mixins: [DbMixin( "project" )],
 	model: {
-		name: "user",
+		name: "project",
 		define: {
 			id: {primaryKey: true,autoIncrement: true,type: Sequelize.INTEGER},
-			utype: Sequelize.INTEGER,
-			name: Sequelize.STRING,
-			surname: Sequelize.STRING,
-			email: Sequelize.STRING,
-			phone: Sequelize.STRING,
-			access_level: Sequelize.STRING,
-			scope:  {default: [],type: Sequelize.JSONB},
-			password: Sequelize.STRING,
-			doc_type: Sequelize.STRING,
-			doc_id: Sequelize.STRING,
-			doc_uf: Sequelize.STRING,
-			avatar: Sequelize.STRING,
-			bias: Sequelize.STRING,
-			fbuid: Sequelize.STRING,
+			company_id: Sequelize.INTEGER,
+			project_name: Sequelize.STRING,
+			project_contact_email: Sequelize.STRING,
+			project_contact_phone: Sequelize.STRING,
+			project_contact_name: Sequelize.STRING,
+			exams_enabled:  {default: [],type: Sequelize.JSONB},
+			exams_contacts:  {default: [],type: Sequelize.JSONB},
+			logo: Sequelize.STRING,
+			cover: Sequelize.STRING,
+			node:  Sequelize.INTEGER,
 			active: Sequelize.BOOLEAN,
-			projects: {default: [],type: Sequelize.JSONB},
-			nodes:  {default: [],type: Sequelize.JSONB},
-			hubs:  {default: [],type: Sequelize.JSONB},
-			cpf: Sequelize.STRING,
 			createdAt: Sequelize.DATE,
 			updatedAt: Sequelize.DATE,
 		},
@@ -44,43 +36,35 @@ module.exports = {
 	settings: {
 		fields: [
 			"id",
-			"utype",
-			"name",
-			"surname",
-			"email",
-			"phone",
-			"access_level",
-			"scope",
-			"password",
-			"doc_type",
-			"doc_id",
-			"doc_uf",
-			"avatar",
-			"bias",
-			"fbuid",
+			"company_id",
+			"project_name",
+			"project_contact_email",
+			"project_contact_phone",
+			"project_contact_name",
+			"exams_enabled",
+			"exams_contacts",
+			"logo",
+			"cover",
+			"node",
 			"active",
-			"projects",
-			"nodes",
-			"hubs",
-			"cpf",
 			"createdAt",
 			"updatedAt",
 		],
 		entityValidator: {
-			name: "string|min:3",
-			surname: "string|min:3",
-			email: "string|email",
+			company_id: {type: "number",positive: true,convert: true},
+			project_name: {type: "string",min: 3,max: 255},
+			project_contact_email: "string|email",
 		},
 	},
 	actions: {
 		test: {
 			rest: {
 				method: "GET",
-				path: "/test"
+				path: "/all-projects",
 			},
 			async handler () {
 				//this.broker.call("$node.health").then(res => console.log(res));
-				return this.schema.adapter.db.query("SELECT * FROM users WHERE id != '2'")
+				return this.schema.adapter.db.query("SELECT * FROM projects WHERE id != '2'")
 					.then(([res, metadata]) => res);
 			},
 		},
@@ -98,7 +82,7 @@ module.exports = {
 					});
 					await producer.connect();
 					const res = await producer.send({
-						topic: "user",
+						topic: "project",
 						acks: 1,
 						messages: Array(getRandomNumber())
 							.fill()
@@ -115,7 +99,7 @@ module.exports = {
 		}
 	},
 	events: {
-		"user.*"(ctx) {
+		"project.*"(ctx) {
 			console.log("Payload:", ctx.params);
 			console.log("Sender:", ctx.nodeID);
 			console.log("Metadata:", ctx.meta);
@@ -124,16 +108,16 @@ module.exports = {
 	},
 	async started () {
 
-		this.schema.adapter.db.addHook( "afterFind", "user", ( result ) => {
-			console.warn( "afterFind\n", result[0].dataValues );
+		this.schema.adapter.db.addHook( "afterFind", "project", ( result ) => {
+			console.warn( "afterFind\n", JSON.stringify(result.dataValues) );
 		} );
-		this.schema.adapter.db.addHook( "afterSave", "user", async ( result ) => {
+		this.schema.adapter.db.addHook( "afterSave", "project", async ( result ) => {
 
 			await producer.connect();
 			const res = await producer.send({
-				topic: "user",
+				topic: "project",
 				acks: 1,
-				messages:[ {key:"new-user", value: JSON.stringify(result.dataValues)}]
+				messages:[ {key:"new-project", value: JSON.stringify(result.dataValues)}]
 			});
 			await producer.disconnect();
 			console.warn( "afterSave\n", result.dataValues );
@@ -141,7 +125,7 @@ module.exports = {
 
 		// Consuming
 		await consumer.connect();
-		await consumer.subscribe({ topic: "user", fromBeginning: true });
+		await consumer.subscribe({ topic: "project", fromBeginning: true });
 
 		await consumer.run({
 			eachMessage: async ( { topic, partition, message } ) => {

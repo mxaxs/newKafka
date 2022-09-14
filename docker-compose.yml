@@ -19,20 +19,6 @@ services:
       - "traefik.http.services.api-gw.loadbalancer.server.port=8080"
     networks:
       - internal
-
-  greeter:
-    container_name: greeter
-    build:
-      context: .
-    image: moleculer-project
-    env_file: docker-compose.env
-    environment:
-      SERVICES: greeter
-    depends_on:
-      - zookeeper
-    networks:
-      - internal
-
   user-producer:
     container_name: user-producer
     build:
@@ -54,6 +40,19 @@ services:
     env_file: docker-compose.env
     environment:
       SERVICES: user
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+  
+  project:
+    container_name: project
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: project
     depends_on:
       - zookeeper
     networks:
@@ -130,6 +129,9 @@ services:
 
       echo -e 'Creating kafka topics'
       kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic user --replication-factor 1 --partitions 2
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic hub --replication-factor 1 --partitions 2
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic node --replication-factor 1 --partitions 2
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic project --replication-factor 1 --partitions 2
 
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:9092 --list
