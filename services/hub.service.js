@@ -5,7 +5,7 @@ const { Kafka } = require( "kafkajs" );
 const kafka = new Kafka( {
 	logLevel: 4,
 	clientId: "hub-service",
-	brokers: ["kafka-1:19092"]
+	brokers: ["kafka1:19092"]
 });
 const producer = kafka.producer();
 const consumer = kafka.consumer( { groupId: "hub" } );
