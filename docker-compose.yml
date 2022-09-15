@@ -19,19 +19,7 @@ services:
       - "traefik.http.services.api-gw.loadbalancer.server.port=8080"
     networks:
       - internal
-  user-producer:
-    container_name: user-producer
-    build:
-      context: .
-    image: moleculer-project
-    env_file: docker-compose.env
-    environment:
-      SERVICES: user-producer
-    depends_on:
-      - zookeeper
-    networks:
-      - internal
-
+  
   user:
     container_name: user
     build:
@@ -53,6 +41,32 @@ services:
     env_file: docker-compose.env
     environment:
       SERVICES: project
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+  
+  node:
+    container_name: node
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: node
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+  
+  hub:
+    container_name: hub
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: hub
     depends_on:
       - zookeeper
     networks:

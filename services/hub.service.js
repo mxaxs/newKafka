@@ -1,41 +1,32 @@
 "use strict";
-const DbMixin = require("../mixins/users.db.mixin");
+const DbMixin = require("../mixins/hubs.db.mixin");
 const Sequelize = require( "sequelize" );
 const { Kafka } = require( "kafkajs" );
 const kafka = new Kafka( {
 	logLevel: 4,
-	clientId: "user-service",
+	clientId: "hub-service",
 	brokers: ["kafka:9092"]
 });
 const producer = kafka.producer();
-const consumer = kafka.consumer( { groupId: "user" } );
+const consumer = kafka.consumer( { groupId: "hub" } );
 
 module.exports = {
-	name: "user",
-	mixins: [DbMixin( "user" )],
+	name: "hub",
+	mixins: [DbMixin( "hub" )],
 	model: {
-		name: "user",
+		name: "hub",
 		define: {
 			id: {primaryKey: true,autoIncrement: true,type: Sequelize.INTEGER},
-			utype: Sequelize.INTEGER,
+			code: Sequelize.STRING,
 			name: Sequelize.STRING,
-			surname: Sequelize.STRING,
-			email: Sequelize.STRING,
-			phone: Sequelize.STRING,
-			access_level: Sequelize.STRING,
-			scope:  {default: [],type: Sequelize.JSONB},
-			password: Sequelize.STRING,
-			doc_type: Sequelize.STRING,
-			doc_id: Sequelize.STRING,
-			doc_uf: Sequelize.STRING,
-			avatar: Sequelize.STRING,
-			bias: Sequelize.STRING,
-			fbuid: Sequelize.STRING,
+			cnpj: Sequelize.STRING,
+			zip_code: Sequelize.STRING,
+			contact_email: Sequelize.STRING,
+			contact_phone: Sequelize.STRING,
+			contact_name: Sequelize.STRING,
+			uuid: Sequelize.STRING,
+			logo: Sequelize.STRING,
 			active: Sequelize.BOOLEAN,
-			projects: {default: [],type: Sequelize.JSONB},
-			nodes:  {default: [],type: Sequelize.JSONB},
-			hubs:  {default: [],type: Sequelize.JSONB},
-			cpf: Sequelize.STRING,
 			createdAt: Sequelize.DATE,
 			updatedAt: Sequelize.DATE,
 		},
@@ -44,43 +35,33 @@ module.exports = {
 	settings: {
 		fields: [
 			"id",
-			"utype",
+			"code",
 			"name",
-			"surname",
-			"email",
-			"phone",
-			"access_level",
-			"scope",
-			"password",
-			"doc_type",
-			"doc_id",
-			"doc_uf",
-			"avatar",
-			"bias",
-			"fbuid",
+			"cnpj",
+			"zip_code",
+			"contact_email",
+			"contact_phone",
+			"contact_name",
+			"uuid",
+			"logo",
 			"active",
-			"projects",
-			"nodes",
-			"hubs",
-			"cpf",
 			"createdAt",
 			"updatedAt",
 		],
 		entityValidator: {
-			name: "string|min:3",
-			surname: "string|min:3",
-			email: "string|email",
+			name: {type: "string",min: 3,max: 255},
+			contact_email: "string|email",
 		},
 	},
 	actions: {
 		test: {
 			rest: {
 				method: "GET",
-				path: "/test"
+				path: "/all-hubs",
 			},
 			async handler () {
-				//this.broker.call("$node.health").then(res => console.log(res));
-				return this.schema.adapter.db.query("SELECT * FROM users WHERE id != '2'")
+				//this.broker.call("$hub.health").then(res => console.log(res));
+				return this.schema.adapter.db.query("SELECT * FROM hubs WHERE id != '2'")
 					.then(([res, metadata]) => res);
 			},
 		},
@@ -98,7 +79,7 @@ module.exports = {
 					});
 					await producer.connect();
 					const res = await producer.send({
-						topic: "user",
+						topic: "hub",
 						acks: 1,
 						messages: Array(getRandomNumber())
 							.fill()
@@ -115,25 +96,37 @@ module.exports = {
 		}
 	},
 	events: {
-		"user.*"(ctx) {
+		"hub.*"(ctx) {
 			console.log("Payload:", ctx.params);
-			console.log("Sender:", ctx.nodeID);
+			console.log("Sender:", ctx.hubID);
 			console.log("Metadata:", ctx.meta);
 			console.log("The called event name:", ctx.eventName);
 		}
 	},
+	methods: {
+		async test () {
+			return this.schema.adapter.db.query( "SELECT * FROM hubs WHERE id != '2'" )
+				.then( ( [res, metadata] ) => res );
+		},
+	},
+	async created () {
+
+		console.log( "hub service created" );
+
+	},
+
 	async started () {
 
-		this.schema.adapter.db.addHook( "afterFind", "user", ( result ) => {
+		this.schema.adapter.db.addHook( "afterFind", "hub", ( result ) => {
 			console.warn( "afterFind\n", JSON.stringify(result.dataValues) );
 		} );
-		this.schema.adapter.db.addHook( "afterSave", "user", async ( result ) => {
+		this.schema.adapter.db.addHook( "afterSave", "hub", async ( result ) => {
 
 			await producer.connect();
 			const res = await producer.send({
-				topic: "user",
+				topic: "hub",
 				acks: 1,
-				messages:[ {key:"new-user", value: JSON.stringify(result.dataValues)}]
+				messages:[ {key:"new-hub", value: JSON.stringify(result.dataValues)}]
 			});
 			await producer.disconnect();
 			console.warn( "afterSave\n", result.dataValues );
@@ -141,7 +134,7 @@ module.exports = {
 
 		// Consuming
 		await consumer.connect();
-		await consumer.subscribe({ topic: "user", fromBeginning: true });
+		await consumer.subscribe({ topic: "hub", fromBeginning: true });
 
 		await consumer.run({
 			eachMessage: async ( { topic, partition, message } ) => {
@@ -156,4 +149,8 @@ module.exports = {
 		} );
 		console.log("STARTED");
 	},
+	async stopped () {
+		console.log("STOPPED");
+	},
+
 };
