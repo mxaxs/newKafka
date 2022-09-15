@@ -72,6 +72,19 @@ services:
     networks:
       - internal
   
+  exams:
+    container_name: exams
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: exams
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+  
   hub:
     container_name: hub
     build:
@@ -93,8 +106,8 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
     volumes:
-      - ./vol1/zk-data:/var/lib/zookeeper/data
-      - ./vol2/zk-txn-logs:/var/lib/zookeeper/log
+      - ./volumes/vol1/zk-data:/var/lib/zookeeper/data
+      - ./volumes/vol2/zk-txn-logs:/var/lib/zookeeper/log
 
     networks:
       - internal
@@ -121,7 +134,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./vol3/kafka1-data:/var/lib/kafka/data
+      - ./volumes/vol3/kafka1-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -148,7 +161,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./vol3/kafka2-data:/var/lib/kafka/data
+      - ./volumes/vol3/kafka2-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -175,7 +188,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./vol3/kafka3-data:/var/lib/kafka/data
+      - ./volumes/vol3/kafka3-data:/var/lib/kafka/data
 
     networks:
       - internal

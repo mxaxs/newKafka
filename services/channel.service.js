@@ -19,7 +19,11 @@ module.exports = {
 				// You should throw error if you want to NACK the message processing.
 				console.log( "user.updated", payload );
 			}
-		}
+		},
+
+		"exams.created"( payload ) {
+			console.log( ">>> exams.created <<<", payload );
+		},
 	},
 };
 

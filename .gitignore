@@ -6,11 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 
 #kafka
-zookeeper*
-kafka_data
-kafka*
 test
-
+volume*
 # Runtime data
 pids
 *.pid
