@@ -8,6 +8,7 @@ yarn-error.log*
 #kafka
 zoo
 kafka_data
+kafka*
 test
 
 # Runtime data

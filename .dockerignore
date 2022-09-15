@@ -6,6 +6,7 @@ test
 .vscode
 zoo
 data
+kafka*
 node_modules
 kafka_data
 

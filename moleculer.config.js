@@ -198,13 +198,16 @@ module.exports = {
 				type: "Kafka",
 				options: {
 					kafka: {
-						brokers: ["kafka:9092"],
+						brokers: ["kafka1:19092","kafka2:19093","kafka3:19094"],
 						// Options for `producer()`
-						producerOptions: {},
+						producerOptions: {
+							partitionsConsumedConcurrently: 3,
+							indepotent: true,
+						},
 						// Options for `consumer()`
 						consumerOptions: {}
 					},
-					maxRetries: 3,
+					maxRetries: 5,
 					deadLettering: {
 						enabled: false,
 						queueName: "DEAD_LETTER"
