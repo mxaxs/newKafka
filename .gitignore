@@ -7,7 +7,7 @@ yarn-error.log*
 
 #kafka
 test
-volume*
+vols*
 # Runtime data
 pids
 *.pid

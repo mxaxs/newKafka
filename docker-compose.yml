@@ -106,8 +106,8 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
     volumes:
-      - ./volumes/vol1/zk-data:/var/lib/zookeeper/data
-      - ./volumes/vol2/zk-txn-logs:/var/lib/zookeeper/log
+      - ./vols/vol1/zk-data:/var/lib/zookeeper/data
+      - ./vols/vol2/zk-txn-logs:/var/lib/zookeeper/log
 
     networks:
       - internal
@@ -134,7 +134,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./volumes/vol3/kafka1-data:/var/lib/kafka/data
+      - ./vols/vol3/kafka1-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -161,7 +161,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./volumes/vol3/kafka2-data:/var/lib/kafka/data
+      - ./vols/vol3/kafka2-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -188,7 +188,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./volumes/vol3/kafka3-data:/var/lib/kafka/data
+      - ./vols/vol3/kafka3-data:/var/lib/kafka/data
 
     networks:
       - internal
