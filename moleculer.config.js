@@ -25,6 +25,7 @@
  *    }
  *  }
  */
+const ChannelsMiddleware = require("@moleculer/channels").Middleware;
 module.exports = {
 	// Namespace of nodes to segment your nodes on the same network.
 	namespace: "",
@@ -52,7 +53,7 @@ module.exports = {
 	},
 	// Default log level for built-in console logger. It can be overwritten in logger options above.
 	// Available values: trace, debug, info, warn, error, fatal
-	logLevel: "info",
+	logLevel: "debug",
 
 	// Define transporter.
 	// More info: https://moleculer.services/docs/0.14/networking.html
@@ -191,7 +192,27 @@ module.exports = {
 	},
 
 	// Register custom middlewares
-	middlewares: [],
+	middlewares: [
+		ChannelsMiddleware({
+			adapter: {
+				type: "Kafka",
+				options: {
+					kafka: {
+						brokers: ["kafka:9092"],
+						// Options for `producer()`
+						producerOptions: {},
+						// Options for `consumer()`
+						consumerOptions: {}
+					},
+					maxRetries: 3,
+					deadLettering: {
+						enabled: false,
+						queueName: "DEAD_LETTER"
+					}
+				}
+			}
+		})
+	],
 
 	// Register custom REPL commands.
 	replCommands: null,

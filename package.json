@@ -25,6 +25,7 @@
     "moleculer-repl": "^0.6.6"
   },
   "dependencies": {
+    "@moleculer/channels": "^0.1.2",
     "kafka-node": "^5.0.0",
     "kafkajs": "^2.2.0",
     "moleculer": "^0.14.16",

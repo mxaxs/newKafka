@@ -5,7 +5,7 @@ const { Kafka } = require( "kafkajs" );
 const kafka = new Kafka( {
 	logLevel: 4,
 	clientId: "user-service",
-	brokers: ["kafka:9092"]
+	brokers: ["kafka-1:19092"]
 });
 const producer = kafka.producer();
 const consumer = kafka.consumer( { groupId: "user" } );
@@ -76,12 +76,19 @@ module.exports = {
 		test: {
 			rest: {
 				method: "GET",
-				path: "/test"
+				path: "/channel"
 			},
 			async handler () {
+				this.broker.sendToChannel( "user.created", {
+					id: 1234,
+					items: [
+						{ name: "Apple", price: 10 },
+						{ name: "Orange", price: 5 }
+					]
+				} );
 				//this.broker.call("$node.health").then(res => console.log(res));
-				return this.schema.adapter.db.query("SELECT * FROM users WHERE id != '2'")
-					.then(([res, metadata]) => res);
+				return this.schema.adapter.db.query( "SELECT * FROM users WHERE id != '2'" ).then( ( [res, metadata] ) => res );
+
 			},
 		},
 		hello: {
