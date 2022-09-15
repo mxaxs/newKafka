@@ -1,14 +1,7 @@
 "use strict";
 const DbMixin = require("../mixins/nodes.db.mixin");
 const Sequelize = require( "sequelize" );
-const { Kafka } = require( "kafkajs" );
-const kafka = new Kafka( {
-	logLevel: 4,
-	clientId: "node-service",
-	brokers: ["kafka1:19092"]
-});
-const producer = kafka.producer();
-const consumer = kafka.consumer( { groupId: "node" } );
+
 
 module.exports = {
 	name: "node",
@@ -80,26 +73,7 @@ module.exports = {
 				path: "/hello"
 			},
 			async handler () {
-				try {
-					const getRandomNumber = () => Math.round(Math.random(10) * 1000);
-					const createMessage = num => ({
-						key: `key-${num}`,
-						value: `value-${num}-${new Date().toISOString()}`,
-					});
-					await producer.connect();
-					const res = await producer.send({
-						topic: "node",
-						acks: 1,
-						messages: Array(getRandomNumber())
-							.fill()
-							.map(_ => createMessage(getRandomNumber()))
-					});
-					await producer.disconnect();
-					return `Message sent successfully! ${res}`;
-				} catch ( error ) {
-					await producer.disconnect();
-					return `[example/producer] ${error}`;
-				}
+				return "Hello Moleculer";
 			}
 
 		}
@@ -127,37 +101,18 @@ module.exports = {
 	async started () {
 
 		this.schema.adapter.db.addHook( "afterFind", "node", ( result ) => {
-			console.warn( "afterFind\n", JSON.stringify(result.dataValues) );
+			console.warn( "afterFind\n", JSON.stringify( result.dataValues ) );
 		} );
 		this.schema.adapter.db.addHook( "afterSave", "node", async ( result ) => {
+			console.warn( "afterSave\n", JSON.stringify( result.dataValues ) );
 
-			await producer.connect();
-			const res = await producer.send({
-				topic: "node",
-				acks: 1,
-				messages:[ {key:"new-node", value: JSON.stringify(result.dataValues)}]
-			});
-			await producer.disconnect();
-			console.warn( "afterSave\n", result.dataValues );
 		} );
 
-		// Consuming
-		await consumer.connect();
-		await consumer.subscribe({ topic: "node", fromBeginning: true });
 
-		await consumer.run({
-			eachMessage: async ( { topic, partition, message } ) => {
-				const mKey = message.key ? message.key.toString() : "no key";
-				console.log({
-					partition,
-					offset: message.offset,
-					key: mKey,
-					value: message.value.toString(),
-				});
-			},
-		} );
-		console.log("STARTED");
+		console.log( "STARTED" );
+
 	},
+
 	async stopped () {
 		console.log("STOPPED");
 	},

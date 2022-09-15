@@ -3407,7 +3407,7 @@
     "qs" "^6.10.1"
     "serve-static" "^1.14.1"
 
-"moleculer@^0.12.0 || ^0.13.0 || ^0.14.0", "moleculer@^0.13.0 || ^0.14.0", "moleculer@^0.14.12", "moleculer@^0.14.16", "moleculer@>=0.12.0 || >=0.13.0":
+"moleculer@^0.12.0 || ^0.13.0 || ^0.14.0", "moleculer@^0.13.0 || ^0.14.0", "moleculer@^0.14.12", "moleculer@^0.14.23", "moleculer@>=0.12.0 || >=0.13.0":
   "integrity" "sha512-DE84fy8+1QiA7kUkF9ce4nyDdptBDlLFQfsaUccTScMGAbEjye5e+zfoI9iSA9rznwvshC8tgLhbOcnQBMn/HA=="
   "resolved" "https://registry.npmjs.org/moleculer/-/moleculer-0.14.23.tgz"
   "version" "0.14.23"

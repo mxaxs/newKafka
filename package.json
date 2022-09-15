@@ -27,7 +27,7 @@
   "dependencies": {
     "@moleculer/channels": "^0.1.2",
     "kafkajs": "^2.2.0",
-    "moleculer": "^0.14.16",
+    "moleculer": "^0.14.23",
     "moleculer-db": "^0.8.19",
     "moleculer-db-adapter-sequelize": "^0.2.15",
     "moleculer-prometheus": "^0.2.5",
