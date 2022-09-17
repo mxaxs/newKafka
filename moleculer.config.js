@@ -214,7 +214,7 @@ module.exports = {
 					}
 				}
 			}
-		})
+		} ),
 	],
 
 	// Register custom REPL commands.

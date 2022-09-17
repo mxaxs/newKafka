@@ -50,19 +50,22 @@ module.exports = {
 				aliases: {
 
 				},
-
 				/**
+				// Mapping policy setting. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Mappi
 				 * Before call hook. You can check the request.
 				 * @param {Context} ctx
 				 * @param {Object} route
 				 * @param {IncomingRequest} req
 				 * @param {ServerResponse} res
 				 * @param {Object} data
-				 *
+					 *
+				 */
+
 				onBeforeCall(ctx, route, req, res) {
 					// Set request headers to context meta
-					ctx.meta.userAgent = req.headers["user-agent"];
-				}, */
+					ctx.meta.userip = req.headers["x-real-ip"];
+					ctx.meta.remoteAddress = req.connection.remoteAddress;
+				},
 
 				/**
 				 * After call hook. You can modify the data.

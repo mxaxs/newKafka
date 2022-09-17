@@ -4,6 +4,7 @@ services:
 
   api:
     container_name: api
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -22,6 +23,7 @@ services:
   
   channel:
     container_name: channel
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -35,6 +37,7 @@ services:
   
   user:
     container_name: user
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -48,6 +51,7 @@ services:
   
   project:
     container_name: project
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -61,6 +65,7 @@ services:
   
   node:
     container_name: node
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -74,6 +79,7 @@ services:
   
   exams:
     container_name: exams
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -87,6 +93,7 @@ services:
   
   hub:
     container_name: hub
+    restart: unless-stopped
     build:
       context: .
     image: moleculer-project
@@ -98,16 +105,31 @@ services:
     networks:
       - internal
 
+  vidaas:
+    container_name: vidaas
+    restart: unless-stopped
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: vidaas
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+
   zookeeper:
     container_name: zookeeper
+    restart: unless-stopped
     hostname: zookeeper
     image: 'confluentinc/cp-zookeeper:latest'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
-    volumes:
-      - ./vols/vol1/zk-data:/var/lib/zookeeper/data
-      - ./vols/vol2/zk-txn-logs:/var/lib/zookeeper/log
+    #volumes:
+    #  - ./vols/vol1/zk-data:/var/lib/zookeeper/data
+    #  - ./vols/vol2/zk-txn-logs:/var/lib/zookeeper/log
 
     networks:
       - internal
@@ -115,6 +137,7 @@ services:
   kafka1:
     hostname: kafka1
     container_name: kafka1
+    restart: unless-stopped
     image: 'confluentinc/cp-kafka:latest'
     environment:
       KAFKA_BROKER_ID: 1
@@ -133,8 +156,8 @@ services:
       
     depends_on:
       - zookeeper
-    volumes:
-      - ./vols/vol3/kafka1-data:/var/lib/kafka/data
+    #volumes:
+    #  - ./vols/vol3/kafka1-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -142,6 +165,7 @@ services:
   kafka2:
     hostname: kafka2
     container_name: kafka2
+    restart: unless-stopped
     image: 'confluentinc/cp-kafka:latest'
     environment:
       KAFKA_BROKER_ID: 2
@@ -160,8 +184,8 @@ services:
       
     depends_on:
       - zookeeper
-    volumes:
-      - ./vols/vol3/kafka2-data:/var/lib/kafka/data
+    #volumes:
+    #  - ./vols/vol3/kafka2-data:/var/lib/kafka/data
 
     networks:
       - internal
@@ -169,6 +193,7 @@ services:
   kafka3:
     hostname: kafka3
     container_name: kafka3
+    restart: unless-stopped
     image: 'confluentinc/cp-kafka:latest'
     environment:
       KAFKA_BROKER_ID: 3
@@ -187,14 +212,15 @@ services:
       
     depends_on:
       - zookeeper
-    volumes:
-      - ./vols/vol3/kafka3-data:/var/lib/kafka/data
+    #volumes:
+    #  - ./vols/vol3/kafka3-data:/var/lib/kafka/data
 
     networks:
       - internal
 
   control-center:
       container_name: control-center
+      restart: unless-stopped
       image: confluentinc/cp-enterprise-control-center:latest
       platform: linux/arm64
       hostname: control-center
@@ -220,6 +246,7 @@ services:
 
   traefik:
     hostname: traefik
+    restart: unless-stopped
     container_name: traefik
     image: traefik:v2.1
     command:
@@ -238,6 +265,7 @@ services:
   prometheus:
     hostname: prometheus
     container_name: prometheus
+    restart: unless-stopped
     image: prom/prometheus
     ports:
       - "9090:9090"
@@ -249,6 +277,7 @@ services:
   grafana:
     hostname: grafana
     container_name: grafana
+    restart: unless-stopped
     image: grafana/grafana
     ports:
       - "3000:3000"
@@ -257,5 +286,24 @@ services:
     networks:
       - internal
 
+  redis:
+    hostname: redis
+    container_name: redis
+    restart: unless-stopped
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    environment:
+      ##- REDIS_REPLICATION_MODE: "master"
+      - ALLOW_EMPTY_PASWORD= yes
+    volumes:
+      - ./vols/vol4/redis_data:/var/lib/redis-persistence/data
+    networks:
+      - internal
+    command: redis-server --requirepass setecodemiguelsete7sete --maxmemory 100mb
+
 networks:
   internal:
+
+volumes:
+  redis_data:

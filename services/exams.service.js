@@ -1,8 +1,15 @@
 "use strict";
 const DbMixin = require("../mixins/exams.db.mixin");
 const Sequelize = require( "sequelize" );
-
-
+const Redis = require( "ioredis" );
+const redis = new Redis(
+	{
+		host: "redis",
+		port: 6379,
+		db: 3,
+		password: "setecodemiguelsete7sete",
+	}
+);
 module.exports = {
 	name: "exams",
 	mixins: [DbMixin( "exams" )],
@@ -90,7 +97,8 @@ module.exports = {
 				//this.broker.call("$exams.health").then(res => console.log(res));
 				return this.schema.adapter.db.query("SELECT * FROM exams WHERE id != '2'")
 					.then( ( [res, metadata] ) => {
-						this.broker.sendToChannel("exams.created", res);
+						this.broker.sendToChannel( "exams.created", res );
+						redis.set( "exams", JSON.stringify( res ), "EX", 60 );
 						return res;
 					} );
 			},
@@ -127,7 +135,6 @@ module.exports = {
 	},
 
 	async started () {
-
 		this.schema.adapter.db.addHook( "afterFind", "exams", ( result ) => {
 			console.warn( "afterFind\n", JSON.stringify( result.dataValues ) );
 		} );
