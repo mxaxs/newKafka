@@ -106,12 +106,12 @@ module.exports = {
 		hello: {
 			rest: {
 				method: "GET",
-				path: "/hello"
+				path: "/docsign"
 			},
 			async handler () {
-				return "Hello Moleculer";
-			}
-
+				this.broker.sendToChannel( "docsign.sign", {id:"222",doc:"document"} );
+				return "sendToChannel DocSign";
+			},
 		}
 	},
 	events: {

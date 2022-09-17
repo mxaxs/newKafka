@@ -6,7 +6,7 @@ module.exports = {
 	channels: {
 		async "docsign.sign"( payload ) {
 			console.log( ">>> docsign.sign <<<", payload );
-			this.broker.call( "sign", payload );
+			this.sign( payload );
 		},
 
 	},
@@ -21,13 +21,18 @@ module.exports = {
 				cpf: "string",
 			},
 			async handler ( ctx ) {
-				console.log( ">>> docsign.sign <<<", ctx.params );
+				console.log( ">>> docsign.sign action <<<", ctx.params );
 				return ctx.params;
 			}
 		},
 	},
 	events: {},
-	methods: {},
+	methods: {
+		async sign ( payload ) {
+			console.log( ">>> docsign.sign method <<<", payload );
+			return payload;
+		}
+	},
 	created () { },
 	started () { },
 	stopped () { },
