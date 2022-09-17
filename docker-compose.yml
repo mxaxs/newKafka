@@ -119,6 +119,20 @@ services:
     networks:
       - internal
 
+  docsign:
+    container_name: docsign
+    restart: unless-stopped
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: docsign
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+
   zookeeper:
     container_name: zookeeper
     restart: unless-stopped
