@@ -1,0 +1,19 @@
+<mxfile host="65bd71144e">
+    <diagram id="vUnm2O_szV4z-EVIsrhg" name="Page-1">
+        <mxGraphModel dx="367" dy="452" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="6" value="" style="edgeStyle=none;html=1;fontSize=9;" parent="1" source="2" target="5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="&lt;font style=&quot;font-size: 9px&quot;&gt;DOCUMENTO ENVIADO PARA ASSINATURA&lt;/font&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="80" width="100" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;id&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;span style=&quot;background-color: rgb(159 , 240 , 134)&quot;&gt;&lt;font color=&quot;#1a1a1a&quot;&gt;exampath&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;cpf (medico)&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;file-hash&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;email&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;medic name&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;crm&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;patient_id&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="30" width="120" height="180" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

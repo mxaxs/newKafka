@@ -47,6 +47,7 @@ module.exports = {
 					const challenge = pkceChallenge();
 					const { cpf, ttl } = ctx.params;
 					const ttln = isNaN( ttl ) ? 43200 : ttl;
+					redis.select( 3 );
 					axios( {
 						method: "GET",
 						url: "v0/oauth/authorize",
@@ -87,6 +88,7 @@ module.exports = {
 				code: "string"
 			},
 			async handler ( ctx ) {
+				redis.select( 3 );
 				const { cpf, code } = ctx.params;
 				try {
 					const code_verifier = await redis.hget( cpf, "code_challenge" );
@@ -119,6 +121,7 @@ module.exports = {
 			},
 			async handler ( ctx ) {
 				try {
+					redis.select( 3 );
 					const { cpf } = ctx.params;
 					const ttl = await redis.ttl( cpf );
 					return { ttl };
@@ -143,6 +146,7 @@ module.exports = {
 			async handler ( ctx ) {
 				try {
 					const { cpf, id, hash } = ctx.params;
+					redis.select( 3 );
 					const access_token = await redis.hget( cpf, "access_token" );
 					const result = await axios( {
 						"method": "POST",
@@ -164,14 +168,14 @@ module.exports = {
 							]
 						}
 					} );
-					console.log( "THE SIGNATURE RESULT\n", JSON.stringify(result.data));
-					redis.hmset( cpf, "signatures", JSON.stringify(result.data.signatures ));
-					return {signature: result.data.signatures[0].raw_signature};
+					//Change to the correct redis database (signature)
+					redis.select( 1 ); //signature
+					redis.hmset( cpf, `${ id }`, result.data.signatures[0].raw_signature || "error" );
+					const signature = await redis.hget( cpf, `${ id }` );
+					return {signature: signature};
 				} catch (error) {
 					return {error};
 				}
-
-
 			}
 		},
 	},

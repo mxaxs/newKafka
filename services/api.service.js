@@ -1,7 +1,6 @@
 "use strict";
 
 const ApiGateway = require("moleculer-web");
-
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  * @typedef {import('http').IncomingMessage} IncomingRequest Incoming HTTP Request
@@ -27,6 +26,11 @@ module.exports = {
 			{
 				path: "/api",
 
+				/* bodyParsers: {
+					json: false,
+					urlencoded: false
+				}, */
+
 				whitelist: [
 					"**"
 				],
@@ -48,8 +52,31 @@ module.exports = {
 				autoAliases: true,
 
 				aliases: {
+					// File upload from HTML multipart form
+					"POST /upload": "multipart:file.save",
 
+					// File upload from AJAX or cURL
+					"PUT /upload:id": "stream:file.save",
+
+					// File upload from HTML form and overwrite busboy config
+					"POST /multi": {
+						type: "multipart",
+						// Action level busboy config
+						busboyConfig: {
+							limits: { files: 1 }
+						},
+						action: "file.save"
+					}
 				},
+
+				// Route level busboy config.
+				// More info: https://github.com/mscdex/busboy#busboy-methods
+				busboyConfig: {
+					limits: { files: 1 }
+					// Can be defined limit event handlers
+					// `onPartsLimit`, `onFilesLimit` or `onFieldsLimit`
+				},
+
 				/**
 				// Mapping policy setting. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Mappi
 				 * Before call hook. You can check the request.
@@ -61,12 +88,12 @@ module.exports = {
 					 *
 				 */
 
-				onBeforeCall(ctx, route, req, res) {
-					// Set request headers to context meta
-					ctx.meta.userip = req.headers["x-real-ip"];
-					ctx.meta.remoteAddress = req.connection.remoteAddress;
-				},
+				/* onBeforeCall(ctx, route, req, res, data) {
 
+					ctx.meta.remoteAddress = req.connection.remoteAddress;
+					ctx.meta.files = req.files;
+				},
+ */
 				/**
 				 * After call hook. You can modify the data.
 				 * @param {Context} ctx

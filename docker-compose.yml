@@ -119,6 +119,22 @@ services:
     networks:
       - internal
 
+  file:
+    container_name: file
+    restart: unless-stopped
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: file
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+    volumes:
+      - ./exams:/usr/share/exams
+
   docsign:
     container_name: docsign
     restart: unless-stopped
@@ -132,6 +148,41 @@ services:
       - zookeeper
     networks:
       - internal
+    volumes:
+      - ./templates:/usr/share/exams/templates
+
+  docsign-slave1:
+    container_name: docsign-slave1
+    restart: unless-stopped
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: docsign
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+    volumes:
+      - ./templates:/usr/share/exams/templates
+
+  docsign-slave2:
+    container_name: docsign-slave2
+    restart: unless-stopped
+    build:
+      context: .
+    image: moleculer-project
+    env_file: docker-compose.env
+    environment:
+      SERVICES: docsign
+    depends_on:
+      - zookeeper
+    networks:
+      - internal
+    volumes:
+      - ./templates:/usr/share/exams/templates
+      - /usr/share/exams
 
   zookeeper:
     container_name: zookeeper

@@ -186,7 +186,7 @@ module.exports = {
 				// Width of row
 				width: 100,
 				// Gauge width in the row
-				gaugeWidth: 40
+				gaugeWidth: 30
 			}
 		}
 	},
@@ -202,10 +202,12 @@ module.exports = {
 						// Options for `producer()`
 						producerOptions: {
 							partitionsConsumedConcurrently: 3,
-							indepotent: true,
 						},
 						// Options for `consumer()`
-						consumerOptions: {}
+						consumerOptions: {
+							partitionsConsumedConcurrently: 3,
+							autoCommitInterval: 10000,
+						}
 					},
 					maxRetries: 5,
 					deadLettering: {

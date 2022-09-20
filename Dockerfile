@@ -3,6 +3,8 @@ FROM node:current-alpine3.16
 
 ENV NODE_ENV=production
 
+RUN mkdir -p /usr/share/exams
+
 RUN mkdir /app
 WORKDIR /app
 
