@@ -11,73 +11,37 @@ const pdf = require("pdf-parse");
 module.exports = {
 	name: "file",
 	actions: {
-		upload: {
-			rest: {
-				method: "POST",
-				path: "/upload"
-			},
-			async handler ( ctx ) {
-
-				console.log("params", ctx);
-				console.log("context.meta.$multipart", ctx.meta.$multipart);
-
-				let sampleFile;
-				let uploadPath;
-				let extension;
-				let downloadPath;
-				const uid = uuidv4();
-				let pdfText = "no text";
-				if ( !ctx.files || Object.keys( ctx.files ).length === 0 ) {
-					console.log( JSON.stringify( ctx ) );
-					return JSON.stringify(ctx.files);
-				}
-				console.log( `Uploading file ${ctx.files}` );
-				try {
-					sampleFile = ctx.files.sampleFile;
-					extension = path.extname(sampleFile.name);
-					uploadPath = "/usr/share/exams/" + uid + extension;
-					downloadPath = "https://api-rest.in/exams/" + uid + extension;
-
-					sampleFile.mv( uploadPath, function ( err ) {
-						if (err) return err;
-						if(extension.toLowerCase() == ".pdf") {
-							try {
-								let dataBuffer = fs.readFileSync(uploadPath);
-								const hashSum = crypto.createHash("sha256");
-								hashSum.update(dataBuffer);
-								const hex = hashSum.digest("hex");
-
-								pdf(dataBuffer).then(function(data) {
-									return JSON.stringify({id:uid, exampath: downloadPath, textexam: data.text, hash:hex });
-								});
-							} catch (error) {
-								JSON.stringify({id:uid, exampath: downloadPath, textexam: error });
-							}
-						} else {
-							this.embedImage(uploadPath, uid, extension ).then( ( paths ) => {
-								JSON.stringify( { id: uid, exampath: paths.downloadPath, textexam: pdfText, hash:paths.hash } );
-							});
-
-
-						}
-					});
-				} catch (error) {
-					console.log( "UPLOAD ERROR >>>>", error );
-				}
-			}
-		},
 		save: {
+			timeout: 20*1000,
 			handler(ctx) {
-				this.logger.info("Received upload $params:", ctx.meta);
 				return new this.Promise((resolve, reject) => {
 					//reject(new Error("Disk out of space"));
+					const uid = uuidv4();
+					const originalExtension = path.extname(ctx.meta.filename);
+					ctx.meta.filename = uid + path.extname(ctx.meta.filename);
 					const filePath = path.join("/usr/share/exams", ctx.meta.filename || this.randomName());
 					const f = fs.createWriteStream(filePath);
-					f.on("close", () => {
+					f.on( "close", async () => {
+
+						ctx.meta.examid = uid;
 						// File written successfully
-						console.log("<<<<<< THE META >>>>>>", ctx.meta);
-						this.logger.info(`Uploaded file stored in '${filePath}'`);
-						resolve({ filePath, meta: ctx.meta });
+						if ( ctx.meta.mimetype != "application/pdf" ) {
+							try {
+								let objFile = await this.embedImage( filePath, uid, originalExtension );
+								resolve ( objFile );
+							} catch ( error ) {
+								console.log( "ERROR >>>>", error );
+								reject( error );
+							}
+						} else {
+							const docBuffer = fs.readFileSync( filePath );
+							const hashSum = crypto.createHash("sha256");
+							hashSum.update(docBuffer);
+							const hex = hashSum.digest("hex");
+							resolve( { id: uid, uploadPath: filePath, downloadPath: "https://api-rest.in/exams/" + ctx.meta.filename, hash:hex } );
+						}
+						//resolve( { id: uid, exampath: "https://api-rest.in/exams/" + uid + ".pdf", textexam: "no text" } );
+						//resolve({ filePath, meta: ctx.meta });
 					});
 
 					ctx.params.on("error", err => {
@@ -104,12 +68,8 @@ module.exports = {
 			const downloadPath = "https://api-rest.in/exams/" + uid + ".pdf";
 
 			try {
-				const dimensions = sizeOf(uploadPath);
 				const imgBuffer = fs.readFileSync( uploadPath );
-				const hashSum = crypto.createHash("sha256");
-				hashSum.update(imgBuffer);
-				const hex = hashSum.digest("hex");
-
+				const dimensions = sizeOf(uploadPath);
 				const imgDims = await Jimp.read( imgBuffer );
 				const imgW = imgDims.bitmap.width + 100;
 				const imgH = imgDims.bitmap.height + 100;
@@ -117,7 +77,6 @@ module.exports = {
 				const document = await PDFDocument.create();
 				//const page = document.addPage([imgW, imgH]);
 				const page = document.addPage([dimensions.width+10, dimensions.height +10]);
-
 
 				let img;
 				if ( ext == ".png" ) {
@@ -131,13 +90,19 @@ module.exports = {
 					y: page.getHeight() / 2 - height / 2,
 				} );
 				fs.writeFileSync( newUploadPath, await document.save() );
-				console.log( "THE UPLOAD-PATH >>>>", uploadPath );
+
+				//generare hash after embed image
+				const docBuffer = fs.readFileSync( newUploadPath );
+				const hashSum = crypto.createHash("sha256");
+				hashSum.update(docBuffer);
+				const hex = hashSum.digest("hex");
+
 				fs.unlink(uploadPath, function (err) {
 					if (err) throw err;
 					// if no error, file has been deleted successfully
 					console.log("File deleted!");
 				});
-				return {uploadPath: newUploadPath, downloadPath: downloadPath, hash:hex};
+				return {id: uid, uploadPath: newUploadPath, downloadPath: downloadPath, hash: hex};
 			} catch ( error ) {
 				return error;
 			}
