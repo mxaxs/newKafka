@@ -60,6 +60,28 @@ module.exports = {
 					ctx.params.pipe( f );
 				});
 			}
+		},
+		delete: {
+			rest: {
+				method: "DELETE",
+				path: "/delete"
+			},
+			params: {
+				id: "string"
+			},
+			handler ( ctx ) {
+				const filePath = path.join( "/usr/share/exams", ctx.params.id + ".pdf" );
+				console.log( "filePath >>>>>>> \n", filePath );
+				return new this.Promise((resolve, reject) => {
+					fs.unlink( filePath, ( err ) => {
+						if ( err ) {
+							reject( err );
+						} else {
+							resolve( "File deleted successfully" );
+						}
+					});
+				});
+			}
 		}
 	},
 	methods: {

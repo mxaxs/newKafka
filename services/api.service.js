@@ -66,7 +66,7 @@ module.exports = {
 							limits: { files: 1 }
 						},
 						action: "file.save"
-					}
+					},
 				},
 
 				// Route level busboy config.
