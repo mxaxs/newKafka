@@ -2,6 +2,18 @@ version: "3.8"
 
 services:
 
+  frontend:
+    build:
+      context: ./frontend
+      #target: 'develop-stage'
+    ports:
+      - "8000:80"
+    volumes:
+      - './frontend:/app'
+    #command: /bin/sh -c "yarn && quasar dev"
+    networks:
+      - internal
+
   api:
     container_name: api
     restart: unless-stopped
@@ -319,7 +331,7 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
     ports:
-      - "80:80"
+      - "3000:80"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -345,7 +357,7 @@ services:
     restart: unless-stopped
     image: grafana/grafana
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
       - ./config/grafana:/etc/grafana/provisioning
     networks:
