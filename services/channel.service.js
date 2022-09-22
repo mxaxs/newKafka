@@ -24,6 +24,20 @@ module.exports = {
 		"exams.created"( payload ) {
 			console.log( ">>> exams.created <<<", payload );
 		},
+		"file.uploaded" ( payload ) {
+			console.log( ">>> file.uploaded <<<", payload );
+		},
+
+	},
+	actions: {
+		user: {
+			rest: "POST /user",
+			async handler ( ctx ) {
+				// Call the event
+				this.broker.sendToChannel( ctx.params.channel, ctx.params );
+				return "OK";
+			},
+		},
 	},
 };
 

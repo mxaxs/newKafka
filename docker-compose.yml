@@ -3,6 +3,7 @@ version: "3.8"
 services:
 
   frontend:
+    container_name: frontend
     build:
       context: ./frontend
       #target: 'develop-stage'
@@ -145,7 +146,7 @@ services:
     networks:
       - internal
     volumes:
-      - ./exams:/usr/share/exams
+      - exams_data:/usr/share/exams
 
   docsign:
     container_name: docsign
@@ -330,9 +331,11 @@ services:
       - "--api.insecure=true" # Don't do that in production!
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "traefik.frontend.rule=Host:frontend"
     ports:
-      - "3000:80"
+      - "80:80"
       - "8080:8080"
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -384,3 +387,5 @@ networks:
 
 volumes:
   redis_data:
+  exams_data:
+    external: true

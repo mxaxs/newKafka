@@ -1,0 +1,25 @@
+<mxfile host="65bd71144e">
+    <diagram id="hle60jEuqvI4T5JfpOeP" name="Page-1">
+        <mxGraphModel dx="928" dy="544" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="75" value="&lt;ol style=&quot;font-size: 14px&quot;&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;Recebe a lista de XMs&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;Seleciona XM para laudar&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;Cancela laudo do XM&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;Rejeita laudo do XM&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;Escolhe / Escreve texto do laudo&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Envia/Fecha Laudo&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Gera PDF do laudo&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Carrega página de rosto&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Mescla Rosto + Laudo + Xm&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Insere estampa da Assinatura&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Cria o placeholder da assinatura&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Cria o arquivo final&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Cria o Hash do PDF final&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Solicita assinatura do HASH no VidaaS&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Recebe Base64 com assinatura&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Assina PDF com assinatura recebida&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Grava PDF no disco&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Grava nome do arquivo assinado no PG&lt;/font&gt;&lt;/li&gt;&lt;li style=&quot;font-size: 14px&quot;&gt;&lt;font color=&quot;#ffff33&quot;&gt;Muda o Status do XM para 'Laudado'&lt;/font&gt;&lt;/li&gt;&lt;/ol&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="50" width="310" height="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="91" value="" style="shape=ext;double=1;rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontColor=#FFFF33;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="370" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="93" value="RabbitMQ" style="shape=ext;double=1;rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontColor=#FFFF33;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="150" width="210" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="94" value="Kafka" style="shape=ext;double=1;rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontColor=#FFFF33;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="220" width="210" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="95" value="Moleculer?&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;span&gt;Websocket with Vue&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="325" width="120" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

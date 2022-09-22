@@ -1,0 +1,30 @@
+// app global css in SCSS form
+[v-cloak] > * {
+  display: none;
+}
+[v-cloak]::before {
+  content: "Carregando aplicação...";
+}
+.backdrop > .q-dialog__backdrop {
+  backdrop-filter: blur(5px) !important;
+}
+.q-dialog__backdrop {
+  backdrop-filter: blur(5px) !important;
+}
+.q-chip {
+  background-color: #64d8cb;
+  padding: 10px;
+  font-size: 11px;
+}
+.q-option {
+  color: #64d8cb;
+}
+
+input > .q-field__control {
+  color: #00675b;
+  border: #00675b;
+  height: 35px !important;
+}
+input {
+  color: #00675b;
+}

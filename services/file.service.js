@@ -10,6 +10,14 @@ const pdf = require("pdf-parse");
 
 module.exports = {
 	name: "file",
+	channels: {
+		"file.upload": {
+			group: "file",
+			async handler ( payload ) {
+				console.log( ">>> file.upload <<<", payload );
+			},
+		},
+	},
 	actions: {
 		save: {
 			timeout: 20*1000,
@@ -17,6 +25,7 @@ module.exports = {
 				return new this.Promise((resolve, reject) => {
 					//reject(new Error("Disk out of space"));
 					const uid = uuidv4();
+					let pdfText = "no text";
 					const originalExtension = path.extname(ctx.meta.filename);
 					ctx.meta.filename = uid + path.extname(ctx.meta.filename);
 					const filePath = path.join("/usr/share/exams", ctx.meta.filename || this.randomName());
@@ -28,6 +37,7 @@ module.exports = {
 						if ( ctx.meta.mimetype != "application/pdf" ) {
 							try {
 								let objFile = await this.embedImage( filePath, uid, originalExtension );
+								this.broker.sendToChannel( "file.uploaded", JSON.stringify(objFile) );
 								resolve ( objFile );
 							} catch ( error ) {
 								console.log( "ERROR >>>>", error );
@@ -37,15 +47,30 @@ module.exports = {
 							const docBuffer = fs.readFileSync( filePath );
 							const hashSum = crypto.createHash("sha256");
 							hashSum.update(docBuffer);
-							const hex = hashSum.digest("hex");
-							resolve( { id: uid, uploadPath: filePath, downloadPath: "https://api-rest.in/exams/" + ctx.meta.filename, hash:hex } );
+							const hex = hashSum.digest( "hex" );
+
+							pdf( docBuffer ).then( async ( data ) => {
+								pdfText = data.text;
+								let objFile = {
+									id: uid,
+									uploadPath: filePath,
+									downloadPath: "https://api-rest.in/exams/" + ctx.meta.filename,
+									originalName: ctx.meta.filename,
+									hash: hex,
+									textexam: pdfText,
+								};
+
+								this.broker.sendToChannel( "file.uploaded", objFile  );
+								resolve( objFile );
+							});
 						}
 						//resolve( { id: uid, exampath: "https://api-rest.in/exams/" + uid + ".pdf", textexam: "no text" } );
 						//resolve({ filePath, meta: ctx.meta });
 					});
 
 					ctx.params.on("error", err => {
-						this.logger.info("File error received", err.message);
+						this.logger.info( "File error received", err.message );
+						this.broker.sendToChannel("file.uploaded", JSON.stringify({ error: err.message }));
 						reject(err);
 
 						// Destroy the local file
