@@ -37,7 +37,7 @@
                 :readonly="readOnlyInfo"
                 outlined
                 dense
-                v-model="newExam.nome"
+                v-model="newExam.name"
                 label="Nome do Paciente *"
                 class="text-uppercase"
                 lazy-rules
@@ -198,11 +198,11 @@
             />
             <q-btn
               :disable="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
               "
               flat
               :color="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
                   ? 'secondary'
                   : 'primary'
               "
@@ -252,11 +252,11 @@
             />
             <q-btn
               :disable="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
               "
               flat
               :color="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
                   ? 'secondary'
                   : 'primary'
               "
@@ -306,11 +306,11 @@
             />
             <q-btn
               :disable="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
               "
               flat
               :color="
-                newExam.exam_motive.length == 0 || newExam.nome.length == 0
+                newExam.exam_motive.length == 0 || newExam.name.length == 0
                   ? 'secondary'
                   : 'primary'
               "
@@ -334,6 +334,8 @@ import DataService from "src/common/services/DataService";
 import gql from "graphql-tag";
 import { useCoreStore } from "src/stores/core";
 import { platform } from "os";
+import axios from "axios";
+
 const stringOptions = [
   "Taquicardia",
   "Dor Torácica",
@@ -363,7 +365,7 @@ export default {
     },
     addExam ( newExam ) {
 
-      axios.post( 'http://localhost:3000/api/exams', newExam ).then( ( response ) => {
+      axios.post( 'http://localhost/api/exams', newExam ).then( ( response ) => {
         console.log( response.data );
       } );
 
@@ -382,8 +384,8 @@ export default {
         newExam.value.exam,
         "exam_motive",
         newExam.value.exam_motive ?? "",
-        "nome",
-        newExam.value.nome,
+        "name",
+        newExam.value.name,
         "obs",
         newExam.value.obs ?? "",
         "phone",
@@ -413,7 +415,7 @@ export default {
               $email: String!
               $exam: String!
               $exam_motive: jsonb!
-              $nome: String!
+              $name: String!
               $obs: String!
               $phone: String!
               $priority: Int!
@@ -436,7 +438,7 @@ export default {
                   exam: $exam
                   exam_motive: $exam_motive
                   lastupdate: "now()"
-                  nome: $nome
+                  name: $name
                   obs: $obs
                   phone: $phone
                   priority: $priority
@@ -463,7 +465,7 @@ export default {
             email: newExam.value.email ?? "",
             exam: newExam.value.exam,
             exam_motive: newExam.value.exam_motive ?? "",
-            nome: newExam.value.nome,
+            name: newExam.value.name,
             obs: newExam.value.obs ?? "",
             phone: newExam.value.phone,
             priority: newExam.value.urgente ? 1 : 3,
@@ -538,37 +540,18 @@ export default {
     },
 
     async checkDup(exam) {
-      const examhash = exam.hash;
 
-      this.$apollo
-        .query({
-          query: gql`
-            query checkDup($hash: String!) {
-              dupe: nxm_exams(where: { examhash: { _eq: $hash } }) {
-                nome
-                status
-                created
-                exam_motive
-                obs
-                senderid
-              }
-            }
-          `,
-          variables: {
-            hash: examhash,
-          },
-          fetchPolicy: "no-cache",
-        })
+      axios.post( 'http://localhost/api/exams/dupes', {hash:exam.hash} )
         .then((response) => {
           const data = response.data;
           console.log("THE DUPPE data >>>>", data);
           console.log("THE DUPPE response >>>>", response);
-          if (data.dupe.length > 0) {
+          if (data.length > 0) {
             Swal.fire(
               "Arquivo duplicado",
               `Este arquivo já foi enviado como pertencente a <br/> ${
-                data.dupe[0].nome
-              } <br/> enviado em ${this.formatDate(data.dupe[0].created)}`,
+                data[0].name
+              } <br/> enviado em ${this.formatDate(data[0].createdAt)}`,
               "warning"
             ).then((res) => {
               this.cancelExam();
@@ -629,7 +612,7 @@ export default {
     const sendExamType = ref("");
     let newExam = ref({
       exam: "",
-      nome: "",
+      name: "",
       sobrenome: "",
       email: "",
       phone: "",
@@ -674,7 +657,7 @@ export default {
 
     const resetForm = () => {
       newExam.value.exam = "";
-      newExam.value.nome = "";
+      newExam.value.name = "";
       newExam.value.sobrenome = "";
       newExam.value.email = "";
       newExam.value.phone = "";
@@ -754,7 +737,7 @@ export default {
       if (nome[0] == "NAME : \nSURNAME : \nAGE" || nome[0] == "NOME:\n \nRG") {
         readOnlyInfo.value = false;
       }
-      newExam.value.nome = nome[1]
+      newExam.value.name = nome[1]
         .toUpperCase()
         .replace("SURNAME : ", "")
         .replace(/\n/g, " ")
@@ -946,11 +929,11 @@ export default {
         },
         success: function (file, response) {
           console.warn("THE RESULT OF UPLOAD >>>>>", response);
-          newExam.value.exam = response.exampath;
+          newExam.value.exam = response.downloadPath;
           newExam.value.examhash = response.hash;
           sessionStorage.setItem("examID", response.id);
           sessionStorage.setItem("examType", file.type);
-          sessionStorage.setItem("examfile", response.exampath);
+          sessionStorage.setItem("examfile", response.downloadPath);
           emitter.emit("checkDup", response);
         },
         init: function () {
@@ -1028,7 +1011,7 @@ export default {
     this.emitter.on("addExam", (e) => {
       this.addExam(e);
     });
-    this.emitter.on("checkDup", (hash) => this.checkDup(hash));
+    this.emitter.on("checkDup", (exam) => this.checkDup(exam));
   },
 };
 </script>

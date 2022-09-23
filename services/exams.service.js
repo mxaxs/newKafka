@@ -31,7 +31,7 @@ module.exports = {
 			name: Sequelize.STRING,
 			sex: Sequelize.STRING,
 			obs: Sequelize.STRING,
-			exam_motive: Sequelize.STRING,
+			exam_motive: Sequelize.JSONB,
 			appraised: Sequelize.DATE,
 			rejected: Sequelize.STRING,
 			condition: Sequelize.STRING,
@@ -88,14 +88,18 @@ module.exports = {
 		},
 	},
 	actions: {
-		test: {
+		dupes: {
 			rest: {
 				method: "GET",
-				path: "/all-examss",
+				path: "/dupes",
 			},
-			async handler () {
+			params:{
+				hash:"string",
+			},
+			async handler (ctx) {
 				//this.broker.call("$exams.health").then(res => console.log(res));
-				return this.schema.adapter.db.query("SELECT * FROM exams WHERE id != '2'")
+				console.log("dupes", ctx.params);
+				return this.schema.adapter.db.query(`SELECT examhash, "createdAt" FROM exams WHERE exam = '${ctx.params.hash}'`)
 					.then( ( [res, metadata] ) => {
 						this.broker.sendToChannel( "exams.created", res );
 						redis.set( "exams", JSON.stringify( res ), "EX", 60 );
